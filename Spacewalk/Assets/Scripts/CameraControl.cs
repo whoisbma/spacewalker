@@ -6,7 +6,7 @@ public class CameraControl : MonoBehaviour {
 	public Transform target;
 	public float fuel;
 
-	float pushForce; 
+	public float pushForce; 
 	float turnValUp;
 	float turnValDown;
 	float turnValLeft;
@@ -23,6 +23,8 @@ public class CameraControl : MonoBehaviour {
 	float pushForceMax;
 	float pushForceIncrement;
 
+	float pushForceAddDrag;
+
 	// Use this for initialization
 	void Start () {
 		pushForce = 0.0f;
@@ -37,8 +39,9 @@ public class CameraControl : MonoBehaviour {
 		turnValMin = 0.01f;
 		turnValIncrement = 0.01f; 
 		turnValDrag = 0.005f;
-		pushForceMax = 0.4f;
-		pushForceIncrement = 0.005f;
+		pushForceMax = 0.2f;
+		pushForceIncrement = 0.01f;
+		pushForceAddDrag = 0.0f;
 	}
 
 	void Update() {
@@ -141,35 +144,30 @@ public class CameraControl : MonoBehaviour {
 			}		
 		}
 
-		float averageTurn = (turnValUp + turnValDown + turnValLeft + turnValRight + turnValRotLeft + turnValRotRight) / 1 ; //used before fake force cancellation
-		rigidbody.angularDrag = averageTurn + stabilize;
-		//rigidbody.angularDrag = stabilize; //TEMP
-		rigidbody.drag = stabilize;
-
-		/*
-		if ((Input.GetKeyUp (KeyCode.W)) || (Input.GetKeyUp (KeyCode.A)) || (Input.GetKeyUp (KeyCode.S)) || 
-			(Input.GetKeyUp (KeyCode.D)) || (Input.GetKeyUp (KeyCode.Q)) || (Input.GetKeyUp (KeyCode.E))) {
-				rigidbody.angularDrag = 0.0f;
-			}
-		*/
 		//thrust
 		if (Input.GetKey ("space")) {
-			if (fuel > 0) {
-				rigidbody.AddForce (target.forward * pushForce) ;  //originally  0.2
-				if (pushForce < pushForceMax) {
-					pushForce += pushForceIncrement;
-				} else {
-					pushForce = pushForceMax;
-				}
+			if (fuel > 0) {					
+				pushForce = 0.2f;
+				pushForceAddDrag = pushForce / 2.0f;
+				rigidbody.AddForce (target.forward * pushForce);  //originally  0.2
+//				if (pushForce < pushForceMax) {
+//					pushForce += pushForceIncrement;
+//				} else {
+//					pushForce = pushForceMax;
+//				}
 				fuel -= 0.01f;
 			} else {
 				pushForce = 0.0f;
-				//Debug.Log ("" + pushForce);
+			//Debug.Log ("" + pushForce);
 			}
+		} else {
+			pushForce = 0.0f;
+			pushForceAddDrag = pushForce / 2.0f;
 		}
+
 		//stabilizer
 		if (Input.GetKey (KeyCode.F)) {
-			stabilize = 0.6f;
+			stabilize = 0.7f;
 			//rigidbody.angularDrag = 0.6f;
 			//rigidbody.drag = 0.6f;
 			fuel -= 0.05f; 
@@ -182,6 +180,11 @@ public class CameraControl : MonoBehaviour {
 		if (fuel < 0) {
 			fuel = 0; 
 		}
+
+		float averageTurn = (turnValUp + turnValDown + turnValLeft + turnValRight + turnValRotLeft + turnValRotRight) / 1 ; //used before fake force cancellation
+		rigidbody.angularDrag = averageTurn + stabilize + pushForceAddDrag;
+		Debug.Log (pushForce);
+		rigidbody.drag = stabilize;
 	}
 
 
