@@ -8,6 +8,7 @@
     var deltaGround: float = 0.2; // character is grounded up to this distance
     var jumpSpeed: float = 10; // vertical jump initial speed
     var jumpRange: float = 10; // range to detect target wall
+    var derp = false;
      
     private var surfaceNormal: Vector3; // current surface normal
     private var myNormal: Vector3; // character normal
@@ -16,20 +17,31 @@
     private var vertSpeed: float = 0; // vertical jump current speed
      
     function Start(){
+    if(derp){
     myNormal = transform.up; // normal starts as character up direction
     rigidbody.freezeRotation = true; // disable physics rotation
     // distance from transform.position to ground
     distGround = collider.bounds.extents.y - collider.bounds.extents.y/2;
+   	 }
     }
      
     function FixedUpdate(){
+    if(derp){
     // apply constant weight force according to character normal:
     rigidbody.AddForce(-gravity*rigidbody.mass*myNormal);
+   	 }
     }
      
     function Update(){
+        if(Input.GetKeyDown(KeyCode.K)){
+    derp=!derp;
+    }
+    
+    if(derp){
+    Start();
     // jump code - jump to wall or simple jump
     if (jumping) return; // abort Update while jumping to a wall
+
     var ray: Ray;
     var hit: RaycastHit;
     if (Input.GetButtonDown("Jump")){ // jump pressed:
@@ -63,6 +75,7 @@
     transform.rotation = Quaternion.Lerp(transform.rotation, targetRot, lerpSpeed*Time.deltaTime);
     // move the character forth/back with Vertical axis:
     transform.Translate(0, 0, Input.GetAxis("Vertical")*moveSpeed*Time.deltaTime);
+    }
     }
      
     function JumpToWall(point: Vector3, normal: Vector3){
